@@ -28,9 +28,9 @@ function App() {
   return (
     <UserContextProvider>
       <Routes>
-      <Route path='/' element={<Home />} />
+        <Route path='/' element={<Home />} />
 
-        <Route path='/' element={<Layout />}>
+          <Route path='/' element={<Layout />}>
           <Route path='/vendor' element={<IndexPage/>} />
           <Route path='/chooser' element={<Chooser />} />
           <Route path='/login' element={<Login />} />
@@ -47,18 +47,10 @@ function App() {
           <Route path="/delivery" element={<Deliveryagent />} />
           <Route path="/helpline" element={<Helpline />} />
 
-
-
-
-        
-
         </Route>
         
       </Routes>
-      </UserContextProvider>
-
-
-    
+    </UserContextProvider>
   )
 }
 

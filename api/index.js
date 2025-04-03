@@ -28,16 +28,13 @@ app.use(cors({
 
 }));
 
-
-// app.use(cors());
-
 app.use(express.json());
 app.use(CookieParser());
 app.use('/uploads', express.static(__dirname+'/uploads'));
 app.use(bodyParser.urlencoded({extended:true}));
 
 mongoose.set('strictQuery', false);
-mongoose.connect('mongodb+srv://navisenthilnadhan:8jKe12GfnJvmT4yh@cluster0.8bh2wxa.mongodb.net/',{useNewUrlParser:true})
+mongoose.connect('mongodb+srv://gyanranjan9661:gyan7462@cluster0.qq81xhn.mongodb.net/mini-project',{useNewUrlParser:true})
 .then(()=>{
     console.log('MongoDB Connected');
 }).catch((err)=>{
@@ -58,29 +55,25 @@ app.get('/test',(req,res)=>{
 })
 
 
-// KbgnFcE4O3U5S371
-app.post('/register',(req,res)=>{
-console.log(req.body); 
-    console.log(req.body);
-    console.log(req.body.name);
-    const {name,email,password}=req.body;
-    
+// register route
+app.post('/register',(req,res)=>{ 
+  console.log(req.body);
+  console.log(req.body.name);
+  const {name,email,password}=req.body;
 
-    console.log(name);
-    
-   
-    const user=new User({
-        name:name,
-        email:email,
-        password:password,
-        
-    })
-    res.json(user)
-    user.save();
-    // console.log(user);
-    console.log("User Saved")
+  const user=new User({
+      name:name,
+      email:email,
+      password:password,
+      
+  })
+  res.json(user)
+  user.save();
+  // console.log(user);
+  console.log("User Saved")
 })
 
+//login route
 app.post('/login',async (req,res)=>{
     const {email,password}=req.body;
     const user=await User.findOne({email:email});
@@ -109,60 +102,60 @@ app.post('/login',async (req,res)=>{
 )
 
 app.post('/login', async (req,res) => {
-    mongoose.connect(process.env.MONGO_URL);
-    const {email,password} = req.body;
-    const userDoc = await User.findOne({email});
-    if (userDoc) {
-      const passOk = bcrypt.compareSync(password, userDoc.password);
-      if (passOk) {
-        jwt.sign({
-          email:userDoc.email,
-          id:userDoc._id,
-          name:userDoc.name
-        }, jwtSecret, {}, (err,token) => {
-          if (err) throw err;
-          res.cookie('token', token).json(userDoc);
-        });
-      } else {
-        res.status(422).json('pass not ok');
-      }
-    } else {
-      res.json('not found');
-    }
-  });
-  
-
-  app.get('/profile',async (req,res)=>{
-    const {token}=req.cookies;
-    if (token) {
-      jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+  mongoose.connect(process.env.MONGO_URL);
+  const {email,password} = req.body;
+  const userDoc = await User.findOne({email});
+  if (userDoc) {
+    const passOk = bcrypt.compareSync(password, userDoc.password);
+    if (passOk) {
+      jwt.sign({
+        email:userDoc.email,
+        id:userDoc._id,
+        name:userDoc.name
+      }, jwtSecret, {}, (err,token) => {
         if (err) throw err;
-        const user = await User.findById(userData.id);
-        res.json(user)
+        res.cookie('token', token).json(userDoc);
       });
     } else {
-      res.json('not found');
+      res.status(422).json('pass not ok');
     }
-  });
+  } else {
+    res.json('not found');
+  }
+});
+  
 
-
-  app.post('/logout',(req,res)=>{
-    res.cookie('token','').json(true);
-  })
-
-  app.post('/upload-by-link', async (req,res) => {
-    const {link} = req.body;
-    console.log("Image Downloaded")
-    console.log(link);
-    const newName = 'photo' + Date.now() + '.jpg';
-    await imageDownloader.image({
-      url: link,
-      dest: __dirname + '/uploads/' + newName,
+app.get('/profile',async (req,res)=>{
+  const {token}=req.cookies;
+  if (token) {
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+      if (err) throw err;
+      const user = await User.findById(userData.id);
+      res.json(user)
     });
-    res.json(newName);
-  });
+  } else {
+    res.json('not found');
+  }
+});
 
-  const photosMiddleware = multer({dest:'uploads/'});
+
+app.post('/logout',(req,res)=>{
+  res.cookie('token','').json(true);
+})
+
+app.post('/upload-by-link', async (req,res) => {
+  const {link} = req.body;
+  console.log("Image Downloaded")
+  console.log(link);
+  const newName = 'photo' + Date.now() + '.jpg';
+  await imageDownloader.image({
+    url: link,
+    dest: __dirname + '/uploads/' + newName,
+  });
+  res.json(newName);
+});
+
+const photosMiddleware = multer({dest:'uploads/'});
 app.post('/upload', photosMiddleware.array('photos', 100), async (req,res) => {
   const uploadedFiles = [];
   for (let i = 0; i < req.files.length; i++) {
@@ -191,17 +184,17 @@ app.post('/places', (req,res) => {
     perks,extraInfo,checkIn,checkOut,maxGuests,
   } = req.body;
   if(token){
-  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-    if (err) throw err;
-    const placeDoc = await Place.create({
-      owner:userData.id,price,
-      title,address,photos:addedPhotos,description,
-      perks,extraInfo,checkIn,checkOut,maxGuests,
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+      if (err) throw err;
+      const placeDoc = await Place.create({
+        owner:userData.id,price,
+        title,address,photos:addedPhotos,description,
+        perks,extraInfo,checkIn,checkOut,maxGuests,
+      });
+      console.log("Place Created")
+      res.json(placeDoc);
     });
-    console.log("Place Created")
-    res.json(placeDoc);
-  });
-}
+  }
 });
 
 app.get('/user-places', (req,res) => {
